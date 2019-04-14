@@ -1,10 +1,115 @@
 ﻿<Window x:Class="UdpTool.Views.MainWindow"
+        xmlns:local="clr-namespace:UdpTool"
+        xmlns:Prism="http://prismlibrary.com/"    
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:prism="http://prismlibrary.com/"
-        prism:ViewModelLocator.AutoWireViewModel="True"
-        Title="{Binding Title}" Height="350" Width="525">
-    <Grid>
-        <ContentControl prism:RegionManager.RegionName="ContentRegion" />
+        Prism:ViewModelLocator.AutoWireViewModel="True" 
+        
+        Title="{Binding Title}" Height="750" Width="400">
+    <Window.Resources>
+        <Style x:Key="NuberTextBox" TargetType="{x:Type TextBox}">
+            <EventSetter Event="PreviewTextInput" Handler="TextBox_PreviewTextInput" />
+            <EventSetter Event="CommandManager.PreviewExecuted" Handler="TextBox_PreviewExecuted" />
+            <Setter Property="InputMethod.IsInputMethodEnabled" Value="False"/>
+            <Setter Property="Margin" Value="2,0,2,0"/>
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="20"/>
+        </Style>
+        <Style x:Key="IPdot" TargetType="{x:Type Label}">
+            <Setter Property="Content" Value="."></Setter>
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Margin" Value="0,2,0,0"/>
+        </Style>
+    </Window.Resources>
+    <Grid ShowGridLines="True">
+        <Grid.RowDefinitions>
+            <!-- ユニキャスト用 ブロードキャスト用 or マルチキャスト -->
+            <RowDefinition Height="Auto"/>
+            <!-- Network interface IPaddress -->
+            <RowDefinition Height="Auto"/>
+            <!-- port number -->
+            <RowDefinition Height="Auto"/>
+            <!-- send data-->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Row="0" VerticalAlignment="Center" Orientation="Horizontal" Margin="20">
+            <RadioButton Content="ユニキャスト" FontSize="15" Checked="RadioButton_Checked" IsChecked="{Binding Path=IsUni, Mode=TwoWay}" Margin="10"/>
+            <RadioButton Content="ブロードキャスト" FontSize="15" Checked="RadioButton_Checked" IsChecked="{Binding Path=IsBld, Mode=TwoWay}" Margin="10"/>
+            <RadioButton Content="マルチキャスト"   FontSize="15" Checked="RadioButton_Checked" IsChecked="{Binding IsMut, Mode=TwoWay}"  Margin="10"/>
+        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="送信元ネットワークインターフェース" Grid.Row="0" Margin="20" VerticalAlignment="Center"  FontSize="15"/>
+            <ComboBox Grid.Row="1" ItemsSource="{Binding Path=NetworkInterFaces}" Margin="5" Width="300">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="IPAddress(v4) {0} : Mask {1}">
+                                    <Binding Path="Address"/>
+                                    <Binding Path="IPv4Mask"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="7*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock VerticalAlignment="Center" Margin="20" FontSize="15"><Run Text="送信先 IP Address(V4 only)"/><Run Text=" "/></TextBlock>
+            <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBox Style="{StaticResource NuberTextBox}" Text="{Binding Ip1}" />
+                <Label Style="{StaticResource IPdot}"/>
+                <TextBox Style="{StaticResource NuberTextBox}" Text="{Binding Ip2}"/>
+                <Label Style="{StaticResource IPdot}"/>
+                <TextBox Style="{StaticResource NuberTextBox}" Text="{Binding Ip3}"/>
+                <Label Style="{StaticResource IPdot}"/>
+                <TextBox Style="{StaticResource NuberTextBox}" Text="{Binding Ip4}"/>
+            </StackPanel>
+            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="1" BorderThickness="2" BorderBrush="Black" CornerRadius="2" >
+            <TextBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Right" Style="{StaticResource NuberTextBox}" Text="{Binding Port}" Margin="5,0,5,5"/> 
+            </Border>
+            <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="15" Margin="5"><Run Text="送信Port"/></TextBlock>
+        </Grid>
+        <Border Grid.Row="3">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Path=SendDataByteSize ,StringFormat=送信データ [{0}Byte]}" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Margin="20" FontSize="15"/>
+                <Button Content="ファイルを開く" 
+                        Grid.Row="0" Grid.Column="1" Click="FileOpenButton_ClickAsync" Height="30"  Margin="10"
+                        VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                <Button Content="保存する" Grid.Row="0" Grid.Column="2" Click="FileSaveButton_Click" Height="30" Margin="10"
+                        VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                <Button Content="送信する" Grid.Row="0" Grid.Column="3" Height="30" Margin="10"
+                        VerticalAlignment="Center" HorizontalAlignment="Right" Click="Button_Click"
+                        Command="{Binding SendCommand}"/>
+                <TextBox x:Name="SendDataBox"
+                     Grid.Row="1" AcceptsReturn="True" FontSize="11" Margin="5" Grid.ColumnSpan="3"
+                     VerticalScrollBarVisibility="Auto"
+                     TextWrapping="Wrap"
+                     Text="{Binding Path=SendData, Mode=TwoWay}"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

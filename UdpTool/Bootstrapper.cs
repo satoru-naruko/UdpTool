@@ -18,10 +18,19 @@ namespace UdpTool
             Application.Current.MainWindow.Show();
         }
 
-        protected override void ConfigureModuleCatalog()
+        protected override void ConfigureContainer()
         {
-            var moduleCatalog = (ModuleCatalog)ModuleCatalog;
-            //moduleCatalog.AddModule(typeof(YOUR_MODULE));
+            base.ConfigureContainer();
+
+            //Container.RegisterTypeForNavigation<ViewB>("ViewB");
+        }
+    }
+
+    public static class UnityExtensions
+    {
+        public static void RegisterTypeForNavigation<T>(this IUnityContainer container, string name)
+        {
+            container.RegisterType(typeof(object), typeof(T), name);
         }
     }
 }
